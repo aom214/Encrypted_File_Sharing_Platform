@@ -1,0 +1,31 @@
+{
+  "name": "file_sharing",
+  "version": "1.0.0",
+  "description": "It is an end to end secure file sharing platform made using node js, mongoDb, React, Redux, Express, Html, Css and js.",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aom214/CyberSecurityProject.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aom214/CyberSecurityProject/issues"
+  },
+  "homepage": "https://github.com/aom214/CyberSecurityProject#readme",
+  "dependencies": {
+    "cloudinary": "^2.6.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongoose": "^8.12.1",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
