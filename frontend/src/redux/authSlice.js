@@ -1,8 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const LOGIN_URL = "http://localhost:4000/api/v1/user/Login";
-const GET_USER_URL = "http://localhost:4000/api/v1/user/GetUser";
+const LOGIN_URL = "https://cybersecuritybackend.onrender.com/api/v1/user/Login";
+const GET_USER_URL = "https://cybersecuritybackend.onrender.com/api/v1/user/GetUser";
 
 // ✅ Async thunk for login (no localStorage)
 export const loginUser = createAsyncThunk("auth/login", async ({ username, password }, thunkAPI) => {
@@ -30,7 +30,7 @@ export const fetchUser = createAsyncThunk("auth/fetchUser", async (_, thunkAPI) 
   }
 });
 
-const LOGOUT_URL = "http://localhost:4000/api/v1/user/Logout"; // ✅ Ensure correct URL
+const LOGOUT_URL = "https://cybersecuritybackend.onrender.com/api/v1/user/Logout"; // ✅ Ensure correct URL
 
 export const logoutUser = createAsyncThunk("auth/logout", async () => {
   try {
