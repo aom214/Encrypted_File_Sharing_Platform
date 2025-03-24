@@ -12,7 +12,7 @@ app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
 app.use(cors({ 
-    origin: "http://localhost:3000", // Allow requests from frontend
+    origin: "*", // Allow requests from frontend
     credentials: true, // Allow cookies and authentication headers
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"]
