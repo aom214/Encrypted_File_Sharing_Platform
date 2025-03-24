@@ -51,44 +51,19 @@ const App = () => {
   return (
     <Router>
       <Routes>
-        {/* ✅ "/" is Dashboard. If not logged in, redirect to Login */}
-        <Route
-          path="/"
-          element={user ? <PrivateRoute><Home onLogout={handleLogout} /></PrivateRoute> : redirectToLogin()}
-        />
+  <Route path="/" element={user ? <PrivateRoute><Home onLogout={handleLogout} /></PrivateRoute> : redirectToLogin()} />
+  <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
+  <Route path="/signup" element={user ? <Navigate to="/" /> : <Signup />} />
+  <Route path="/profile" element={user ? <PrivateRoute><UserProfile onLogout={handleLogout} /></PrivateRoute> : redirectToLogin()} />
+  <Route path="/share-file" element={user ? <PrivateRoute><Dashboard onLogout={handleLogout} /></PrivateRoute> : redirectToLogin()} />
+  <Route path="/files" element={user ? <PrivateRoute><Files onLogout={handleLogout} /></PrivateRoute> : redirectToLogin()} />
+  <Route path="/request" element={user ? <PrivateRoute><RequestsPage onLogout={handleLogout}/></PrivateRoute> : redirectToLogin()} />
+  <Route path="/add-friends" element={user ? <PrivateRoute><AddFriendsPage onLogout={handleLogout}/></PrivateRoute> : redirectToLogin()} />
 
+  {/* ✅ Catch-all route (Redirects to Home if no match is found) */}
+  <Route path="*" element={<Navigate to="/" />} />
+</Routes>
 
-        {/* ✅ If logged in, prevent access to Login page */}
-        <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
-        <Route path="/signup" element={user ? <Navigate to="/" /> : <Signup />} />
-        <Route
-          path="/profile"
-          element={user ? <PrivateRoute><UserProfile onLogout={handleLogout} /></PrivateRoute> : redirectToLogin()}
-        />
-        {/* ✅ Dashboard Route (Redirect to Login if not logged in) */}
-        <Route
-          path="/share-file"
-          element={user ? <PrivateRoute><Dashboard onLogout={handleLogout} /></PrivateRoute> : redirectToLogin()}
-        />
-
-        {/* ✅ Files Route (Redirect to Login if not logged in) */}
-        <Route
-          path="/files"
-          element={user ? <PrivateRoute><Files onLogout={handleLogout} /></PrivateRoute> : redirectToLogin()}
-        />
-
-        {/* ✅ Requests Route (Newly added) */}
-        <Route
-          path="/request"
-          element={user ? <PrivateRoute><RequestsPage onLogout={handleLogout}/></PrivateRoute> : redirectToLogin()}
-        />
-
-<Route
-  path="/add-friends"
-  element={user ? <PrivateRoute><AddFriendsPage onLogout={handleLogout}/></PrivateRoute> : redirectToLogin()}
-/>
-
-      </Routes>
     </Router>
   );
 };
