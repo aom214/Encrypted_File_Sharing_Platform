@@ -1,9 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const LOGIN_URL = "https://cybersecuritybackend.onrender.com/api/v1/user/Login";
-const GET_USER_URL = "https://cybersecuritybackend.onrender.com/api/v1/user/GetUser";
-const LOGOUT_URL = "https://cybersecuritybackend.onrender.com/api/v1/user/Logout";
+const LOGIN_URL = "https://cybersecurityproject-soi5.onrender.com/api/v1/user/Login";
+const GET_USER_URL = "https://cybersecurityproject-soi5.onrender.com/api/v1/user/GetUser";
+const LOGOUT_URL = "https://cybersecurityproject-soi5.onrender.com/api/v1/user/Logout";
 
 // ✅ Async thunk for login (Cookies-based Auth)
 export const loginUser = createAsyncThunk("auth/login", async ({ username, password }, thunkAPI) => {
