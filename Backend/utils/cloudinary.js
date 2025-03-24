@@ -19,14 +19,14 @@ const upload_on_cloudinary = async (file_url) => {
             resource_type: "raw",
             public_id: `uploads/${Date.now()}`, 
         });
-        fs.unlink(file_url, (err) => {
-            if (err) {
-                console.error("File deletion error:", err);
-                throw err
-            } else {
-                console.log("File deleted successfully");
-            }
-        });
+        // fs.unlink(file_url, (err) => {
+        //     if (err) {
+        //         console.error("File deletion error:", err);
+        //         throw err
+        //     } else {
+        //         console.log("File deleted successfully");
+        //     }
+        // });
         return uploadResult;
     } catch (error) {
         if(file_url){
@@ -42,5 +42,4 @@ const upload_on_cloudinary = async (file_url) => {
         return null;
     }
 };
-
 export default upload_on_cloudinary;

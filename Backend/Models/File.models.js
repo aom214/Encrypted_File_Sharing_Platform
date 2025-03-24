@@ -1,4 +1,5 @@
 import mongoose from "mongoose"
+import bcrypt from "bcryptjs"
 const FileSchema = new mongoose.Schema({
     senderId:{type:mongoose.Schema.Types.ObjectId,
         ref:"User",
@@ -27,6 +28,21 @@ const FileSchema = new mongoose.Schema({
         required:true,
     }
 },{"timestamps":true})
+
+
+FileSchema.pre("save",async function(next){
+    try {
+        if (!this.isModified("filekey")) return next();
+        const salt_rounds=parseInt(process.env.SALT_ROUNDS)
+        this.password=await bcrypt.hash(this.password,salt_rounds)
+        next();
+    } catch (error) {
+        return next(error)
+    }
+})
+
+
+
 export const FileModel=mongoose.model("File",FileSchema)
 
 

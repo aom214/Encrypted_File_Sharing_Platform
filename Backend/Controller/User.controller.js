@@ -79,6 +79,15 @@ const Register=async(req,res,next)=>{
     return res.status(200).json({"user":new_user_data})
 }
 
+
+const get_user_jwt=async(req,res)=>{
+    const user=req.user;
+    if(!user){
+        return res.status(400).json({"error":"user not found"})
+    }
+    return res.status(200).json({"user":user})
+}
+
 const Login=async(req,res)=>{
     const {username,password}=req.body 
     if (!username || !password){
@@ -116,15 +125,17 @@ const Login=async(req,res)=>{
     }
     res.cookie("accessToken", access_token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "Strict",
-        maxAge: 15 * 60 * 1000, 
+        secure: process.env.NODE_ENV === "production", // Only secure in production
+        sameSite: "Lax", // Prevents token deletion on refresh
+        maxAge: 15 * 60 * 1000, // 15 minutes
     });
+
+    // ✅ Set `refreshToken` cookie
     res.cookie("refreshToken", refresh_token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "Strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000, 
+        sameSite: "Lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
     return res.status(200).json({"user":main_user,"accessToken":access_token,"refreshToken":refresh_token})
 }
@@ -137,6 +148,8 @@ const Logout = async(req,res)=>{
     if(!req_user){
         return res.status(400).json({"error":"login first for logout"})
     }
+    console.log("ehllo")
+
     res.clearCookie("accessToken", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -148,6 +161,7 @@ const Logout = async(req,res)=>{
         secure: process.env.NODE_ENV === "production",
         sameSite: "Strict",
     });
+    console.log("logout is successfull")
 
     res.status(200).json({ "message": "Logged out successfully" });
 }
@@ -178,39 +192,48 @@ const test = async (req,res)=>{
     return res.status(200)
 }
 
+const get_all_users_not_frineds = async (req, res) => {
+    try {
+        const curr_user = req.user;
+        if (!curr_user) {
+            return res.status(400).json({ "error": "You need to login first to access this" });
+        }
 
-const get_all_users_not_frineds=async(req,res)=>{
-    const curr_user = req.user;
+        // ✅ Step 1: Find all friends of the current user
+        const curr_user_friends = await Friend.find({
+            $or: [
+                { userId1: curr_user._id },
+                { userId2: curr_user._id }
+            ]
+        }).lean();
 
-    if (!curr_user) {
-        return res.status(400).json({ "error": "You need to login first to access this" });
+        // ✅ Step 2: Extract friend IDs (excluding curr_user)
+        const friendIds = curr_user_friends.map(friend =>
+            friend.userId1.toString() === curr_user._id.toString() ? friend.userId2 : friend.userId1
+        );
+
+        // ✅ Step 3: Find all pending friend requests sent by curr_user
+        const pendingRequests = await Notification.find({
+            sender: curr_user._id,
+            file: false
+        }).lean();
+
+        // ✅ Step 4: Extract receiver IDs from pending requests
+        const requestedUserIds = pendingRequests.map(req => req.receivers.toString());
+
+        // ✅ Step 5: Find all users who are NOT friends and have NOT received a request
+        const nonFriends = await User.find({
+            _id: { $nin: [...friendIds, ...requestedUserIds, curr_user._id] } // Exclude friends, requested users, and self
+        }).lean();
+
+        return res.status(200).json({ "non-friends": nonFriends });
+
+    } catch (error) {
+        console.error("Error fetching non-friends:", error);
+        return res.status(500).json({ "error": "Internal Server Error" });
     }
+};
 
-    // Find all friends of the current user
-    const curr_user_friends = await Friend.find({
-        $or: [
-            { userId1: curr_user._id },
-            { userId2: curr_user._id }
-        ]
-    })
-    .populate("userId1 userId2") // Get full user details
-    .lean();
-
-    // Extract friend IDs (exclude curr_user)
-    const friendIds = curr_user_friends.map(friend =>
-        friend.userId1._id.toString() === curr_user._id.toString() ? friend.userId2._id : friend.userId1._id
-    );
-
-    // Find all users who are NOT friends with curr_user
-    const nonFriends = await User.find({
-        _id: { $nin: [...friendIds, curr_user._id] } // Exclude friends & curr_user
-    }).lean();
-
-    console.log(nonFriends); 
-
-    return res.status(200).json({ "non-friends": nonFriends });
-
-}
 
 const request_friend = async (req, res) => {
     try {
@@ -255,35 +278,115 @@ const get_all_requests_received = async(req,res)=>{
     if(!curr_user){
         return res.status(400).json({"error":"you need to login first"})
     }
-    const all_requests = await Notification.find({$and:[{receivers:curr_user},{file:false}]})
+    const all_requests = await Notification.find({$and:[{receivers:curr_user},{file:false}]}).populate("receivers").populate("sender").sort({ createdAt: -1 });
     return res.status(200).json({"all_requests":all_requests})
 }
+const request_accepts = async (req, res) => {
+    try {
+        const curr_user = req.user;
+        const { request_id } = req.params;
 
-const request_accepts = async (req,res) =>{
-    const curr_user =req.user
-    const {request_id} = req.params 
-    if(!curr_user){
-        return res.status(400).json({"error":"you need to loigin first to acces this"})
-    }
-    const is_true_request = await Notification.find({$and:[{_id:request_id},{file:false}]})
-    if(is_true_request.length!=0){
-        return res.status(400).json({"error":"either there is no request or the request is of file type"})
-    }
-    const is_friend = await Friend.findOne({$or:[{$and:[{userId1:curr_user},{userId2:is_true_request.sender}]},{$and:[{$and:[{userId1:curr_user},{userId2:is_true_request.sender}]}]}]})
+        if (!curr_user) {
+            return res.status(400).json({ "error": "You need to log in first to access this." });
+        }
 
-    if(is_friend){
-        return res.status(400).json({"error":"you both are already friends of each others"})
-    }
-    const deletedNotification = await Notification.findOneAndDelete({$and:[{_id:request_id},{file:false}]});
-    if(!deletedNotification){
-        return res.status(400).json({"error":"request cannot be found"})
-    }
-    const new_friend= new Friend({
-        userId1:is_true_request.sender,
-        userId2:curr_user
-    })
+        console.log("Request ID:", request_id);
 
-    await new_friend.save()
+        // ✅ Use `findOne()` instead of `find()`
+        const is_true_request = await Notification.findOne({ _id: request_id, file: false });
+
+        if (!is_true_request) {
+            return res.status(400).json({ "error": "Either no request exists or the request is of file type." });
+        }
+
+        console.log("Valid request found:", is_true_request);
+
+        // ✅ Ensure IDs are properly compared as strings
+        const is_friend = await Friend.findOne({
+            $or: [
+                { $and: [{ userId1: curr_user._id.toString() }, { userId2: is_true_request.sender.toString() }] },
+                { $and: [{ userId1: is_true_request.sender.toString() }, { userId2: curr_user._id.toString() }] }
+            ]
+        });
+
+        if (is_friend) {
+            return res.status(400).json({ "error": "You both are already friends." });
+        }
+
+        // ✅ Delete the notification
+        const deletedNotification = await Notification.findOneAndDelete({ _id: request_id, file: false });
+
+        if (!deletedNotification) {
+            return res.status(400).json({ "error": "Request cannot be found." });
+        }
+
+        // ✅ Add new friend record
+        const new_friend = new Friend({
+            userId1: is_true_request.sender,
+            userId2: curr_user._id
+        });
+
+        await new_friend.save();
+
+        // ✅ Return a success response
+        return res.status(200).json({ "message": "Friend request accepted!" });
+
+    } catch (error) {
+        console.error("Error accepting request:", error);
+        return res.status(500).json({ "error": "Internal server error." });
+    }
+};
+const profile=async(req,res)=>{
+    const req_user= req.user;
+    if (!req_user){
+        return res.status(400).json({"error":"you need to login first"})
+    }
+    return res.status(200).json({"user":req_user})
 }
 
-export {Register,Login,Logout,generate_jwt_token,get_all_users_not_frineds,request_friend,get_all_requests_received,request_accepts,test}
+const request_declines = async (req, res) => {
+    try {
+        const curr_user = req.user;
+        const { request_id } = req.params;
+
+        if (!curr_user) {
+            return res.status(400).json({ "error": "You need to log in first to access this." });
+        }
+
+        console.log("Request ID:", request_id);
+
+        // ✅ Use `findOne()` instead of `find()`
+        const is_true_request = await Notification.findOne({ _id: request_id, file: false });
+
+        if (!is_true_request) {
+            return res.status(400).json({ "error": "Either no request exists or the request is of file type." });
+        }
+
+        console.log("Valid request found:", is_true_request);
+
+        // ✅ Ensure IDs are properly compared as strings
+        const is_friend = await Friend.findOne({
+            $or: [
+                { $and: [{ userId1: curr_user._id.toString() }, { userId2: is_true_request.sender.toString() }] },
+                { $and: [{ userId1: is_true_request.sender.toString() }, { userId2: curr_user._id.toString() }] }
+            ]
+        });
+
+        if (is_friend) {
+            return res.status(400).json({ "error": "You both are already friends." });
+        }
+
+        // ✅ Delete the notification
+        const deletedNotification = await Notification.findOneAndDelete({ _id: request_id, file: false });
+
+        
+        // ✅ Return a success response
+        return res.status(200).json({ "message": "Friend request declined!" });
+
+    } catch (error) {
+        console.error("Error accepting request:", error);
+        return res.status(500).json({ "error": "Internal server error." });
+    }
+};
+
+export {Register,Login,get_user_jwt,Logout,generate_jwt_token,get_all_users_not_frineds,request_friend,get_all_requests_received,request_accepts,profile,request_declines,test}

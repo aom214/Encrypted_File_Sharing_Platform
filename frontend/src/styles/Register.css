@@ -1,0 +1,39 @@
+/* 🌌 Dark Blue Background */
+body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(to right, #0a1931, #162447, #1b3a57, #204e67); /* ✅ Dark blue gradient */
+    color: white;
+  }
+  
+  /* 🏆 Apply Full Background */
+  .login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0;
+    background: linear-gradient(to right, #0a1931, #162447, #1b3a57, #204e67);
+  }
+  
+  /* ✅ Increased Form Width */
+  .scroll-container {
+    width: 100%;
+    max-width: 700px; /* ✅ Adjust width to fit content */
+  }
+  
+  /* 🏆 Signup/Login Card */
+  .login-card {
+    width: 100%;
+    padding: 20px;
+    border-radius: 12px;
+    background: #112240; /* ✅ Slightly lighter dark blue */
+    box-shadow: 0px 4px 20px rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .login-card:hover {
+    transform: scale(1.02);
+  }
+  

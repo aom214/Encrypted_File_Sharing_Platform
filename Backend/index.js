@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
+
 console.log("index file is running")
 import app from "./app.js";
 
