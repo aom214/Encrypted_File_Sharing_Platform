@@ -12,6 +12,8 @@ import RequestsPage from "./components/Notifications.js";
 import AddFriendsPage from "./components/Addfrined.js";
 import Home from "./components/Home.js";
 import UserProfile from "./components/userprofile.js";
+import { HashRouter as Router } from "react-router-dom";
+
 
 const App = () => {
   const dispatch = useDispatch();
