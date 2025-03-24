@@ -3,25 +3,26 @@ import axios from "axios";
 
 const LOGIN_URL = "https://cybersecuritybackend.onrender.com/api/v1/user/Login";
 const GET_USER_URL = "https://cybersecuritybackend.onrender.com/api/v1/user/GetUser";
+const LOGOUT_URL = "https://cybersecuritybackend.onrender.com/api/v1/user/Logout";
 
-// ✅ Async thunk for login (no localStorage)
+// ✅ Async thunk for login (Cookies-based Auth)
 export const loginUser = createAsyncThunk("auth/login", async ({ username, password }, thunkAPI) => {
   try {
     const response = await axios.post(LOGIN_URL, { username, password }, { 
-      withCredentials: true // ✅ Ensure cookies are sent & received
+      withCredentials: true // ✅ Ensures cookies are sent & received
     });
 
-    return { user: response.data.user }; // ✅ No need to manually store JWT
+    return { user: response.data.user };
   } catch (error) {
     return thunkAPI.rejectWithValue(error.response?.data?.message || "Login failed");
   }
 });
 
-// ✅ Fetch user using cookies
+// ✅ Fetch user (Uses cookies)
 export const fetchUser = createAsyncThunk("auth/fetchUser", async (_, thunkAPI) => {
   try {
     const response = await axios.get(GET_USER_URL, { 
-      withCredentials: true // ✅ Ensure cookies are sent
+      withCredentials: true // ✅ Ensures cookies are sent
     });
 
     return { user: response.data.user };
@@ -30,12 +31,11 @@ export const fetchUser = createAsyncThunk("auth/fetchUser", async (_, thunkAPI) 
   }
 });
 
-const LOGOUT_URL = "https://cybersecuritybackend.onrender.com/api/v1/user/Logout"; // ✅ Ensure correct URL
-
+// ✅ Logout (Clears cookies)
 export const logoutUser = createAsyncThunk("auth/logout", async () => {
   try {
     await axios.post(LOGOUT_URL, {}, { 
-      withCredentials: true // ✅ Ensure cookies are removed
+      withCredentials: true // ✅ Ensures cookies are removed
     });
   } catch (error) {
     console.error("Logout error:", error.response?.data || error.message);
@@ -44,6 +44,7 @@ export const logoutUser = createAsyncThunk("auth/logout", async () => {
   return null;
 });
 
+// ✅ Auth Slice
 const authSlice = createSlice({
   name: "auth",
   initialState: {
@@ -52,7 +53,7 @@ const authSlice = createSlice({
     error: null,
   },
   reducers: {
-    setUser: (state, action) => { // ✅ Used when fetching user
+    setUser: (state, action) => { 
       state.user = action.payload;
     },
   },
@@ -81,3 +82,8 @@ const authSlice = createSlice({
 
 export const { setUser } = authSlice.actions;
 export default authSlice.reducer;
+
+
+
+
+

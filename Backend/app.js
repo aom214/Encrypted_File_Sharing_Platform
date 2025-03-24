@@ -1,24 +1,36 @@
 import express from "express";
-import cors from 'cors';
-import routes from './routes/index.js';
+import cors from "cors";
+import routes from "./routes/index.js";
 import cookieParser from "cookie-parser";
 
-const app = express()
+const app = express();
 
-console.log("app is running")
+console.log("✅ Server is running...");
 
-app.use(express.json()); // Parse JSON bodies
+// ✅ Proper CORS Setup
+const corsOptions = {
+    origin: "https://cybersecurityfrontend.onrender.com", // ✅ Allow frontend URL
+    credentials: true, // ✅ Allow cookies
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+};
 
-app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+// ✅ Apply CORS Middleware BEFORE Routes
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // ✅ Handle Preflight Requests
 
-app.use(cors({ 
-    origin: "https://cybersecurityfrontend.onrender.com", // Allow requests from frontend
-    credentials: true, // Allow cookies and authentication headers
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"]
-  }));
+// ✅ Middleware for JSON, URL Encoding & Cookies
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use("/api/v1",routes)
 
+// ✅ Define Routes
+app.use("/api/v1", routes);
 
-export default app 
+// ✅ Error Handling Middleware (Optional)
+app.use((err, req, res, next) => {
+    console.error("🔥 Server Error:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+});
+
+export default app;

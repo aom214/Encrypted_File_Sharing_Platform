@@ -87,58 +87,68 @@ const get_user_jwt=async(req,res)=>{
     }
     return res.status(200).json({"user":user})
 }
+const Login = async (req, res) => {
+    try {
+        const { username, password } = req.body;
 
-const Login=async(req,res)=>{
-    const {username,password}=req.body 
-    if (!username || !password){
-        return res.status(400).json({"error":"username or password cannot be null"})
+        if (!username || !password) {
+            return res.status(400).json({ error: "Username or password cannot be null" });
+        }
+
+        const get_user = await User.findOne({ username });
+        if (!get_user) {
+            return res.status(400).json({ error: "There is no user with this username" });
+        }
+
+        const is_match = await get_user.is_password_correct(password);
+        if (!is_match) {
+            return res.status(400).json({ error: "Password is incorrect" });
+        }
+
+        const { access_token, refresh_token } = await generate_jwt_token(get_user._id);
+
+        if (!access_token || !refresh_token) {
+            return res.status(400).json({ error: "Error in generating tokens" });
+        }
+
+        get_user.accessToken = access_token;
+        get_user.refreshToken = refresh_token;
+        get_user.validateBeforeSave = false;
+        await get_user.save();
+
+        const main_user = await User.findById(get_user._id).select("-password -refreshToken -__v");
+        if (!main_user) {
+            return res.status(400).json({ error: "Cannot get user after saving tokens" });
+        }
+
+        // ✅ Set CORS Headers (Important)
+        res.setHeader("Access-Control-Allow-Origin", "https://cybersecurityfrontend.onrender.com");
+        res.setHeader("Access-Control-Allow-Credentials", "true");
+        res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+        // ✅ Set Secure Cookies
+        res.cookie("accessToken", access_token, {
+            httpOnly: true,
+            secure: true, // Ensure HTTPS
+            sameSite: "None", // Allow cross-site requests
+            maxAge: 15 * 60 * 1000, // 15 minutes
+        });
+
+        res.cookie("refreshToken", refresh_token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "None",
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        });
+
+        return res.status(200).json({ user: main_user });
+    } catch (error) {
+        console.error("🔥 Login Error:", error);
+        return res.status(500).json({ error: "Login failed" });
     }
-    const get_user = await User.findOne({username:username})
-    if(!get_user){
-        return res.status(400).json({"error":"there is no user with this username"})
-    }
-    const is_match=await get_user.is_password_correct(password)
-    console.log(password)
-    console.log(is_match)
-    if(!is_match){
-        return res.status(400).json({"error":"password is incorrect"})
-    }
-    const {access_token,refresh_token}= await generate_jwt_token(get_user._id);
+};
 
-    console.log(access_token)
-
-    if(!access_token || !refresh_token){
-        return res.status(400).json({"error":"error in generating tokes"})
-    }
-
-    console.log("hello dncdnc")
-    get_user.accessToken=access_token;
-    get_user.refreshToken=refresh_token;
-    get_user.validateBeforeSave = false;
-    await get_user.save();
-    console.log("hello im here ")
-    const main_user=await User.findById(get_user._id).select("-password -refreshToken -__v")
-
-
-    if(!main_user){
-        return res.status(400).json({"error":"cannot get user after saving tokens"})
-    }
-    res.cookie("accessToken", access_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // Only secure in production
-        sameSite: "Lax", // Prevents token deletion on refresh
-        maxAge: 15 * 60 * 1000, // 15 minutes
-    });
-
-    // ✅ Set `refreshToken` cookie
-    res.cookie("refreshToken", refresh_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "Lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
-    return res.status(200).json({"user":main_user,"accessToken":access_token,"refreshToken":refresh_token})
-}
 
 
 const Logout = async(req,res)=>{
