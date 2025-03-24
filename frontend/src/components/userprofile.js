@@ -12,7 +12,7 @@ const UserProfilePage = ({ onLogout }) => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/api/v1/user/profile", {
+        const response = await axios.get("https://cybersecurityproject-soi5.onrender.com/api/v1/user/profile", {
           withCredentials: true,
         });
         console.log("User profile data:", response.data);

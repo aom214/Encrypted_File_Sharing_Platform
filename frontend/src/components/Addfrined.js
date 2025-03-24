@@ -14,7 +14,7 @@ const AddFriendsPage = ({ onLogout }) => {
   useEffect(() => {
     const fetchNonFriends = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/api/v1/user/get_all_non_friends", {
+        const response = await axios.get("https://cybersecurityproject-soi5.onrender.com/api/v1/user/get_all_non_friends", {
           withCredentials: true,
         });
         const nonFriendsData = response.data["non-friends"] || [];
@@ -53,7 +53,7 @@ const AddFriendsPage = ({ onLogout }) => {
 
   const sendFriendRequest = async (userId, username) => {
     try {
-      const response = await axios.get(`http://localhost:4000/api/v1/user/request/${userId}`, {
+      const response = await axios.get(`https://cybersecurityproject-soi5.onrender.com/api/v1/user/request/${userId}`, {
         withCredentials: true,
       });
       // Show notification instead of alert
