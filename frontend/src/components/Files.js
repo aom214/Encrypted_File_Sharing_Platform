@@ -12,7 +12,7 @@ const Files = ({ onLogout }) => {
   useEffect(() => {
     const fetchFiles = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/api/v1/user/AllFiles", {
+        const response = await axios.get("https://cybersecurityproject-soi5.onrender.com/api/v1/user/AllFiles", {
           withCredentials: true,
         });
         const filesData = response.data.file || response.data || [];
@@ -33,7 +33,7 @@ const Files = ({ onLogout }) => {
       console.log("Requesting decrypted file for ID:", fileId);
 
       const decryptResponse = await axios.get(
-        `http://localhost:4000/api/v1/user/AllFiles/${fileId}/decrypt`,
+        `https://cybersecurityproject-soi5.onrender.com/api/v1/user/AllFiles/${fileId}/decrypt`,
         { withCredentials: true }
       );
       const decryptedFileUrl = decryptResponse.data.file;
