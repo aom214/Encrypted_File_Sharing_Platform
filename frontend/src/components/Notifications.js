@@ -15,7 +15,7 @@ const RequestsPage = ({ onLogout }) => {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/api/v1/user/get_all_requests", {
+        const response = await axios.get("https://cybersecurityproject-soi5.onrender.com/api/v1/user/get_all_requests", {
           withCredentials: true,
         });
         const requestsData = response.data.all_requests || [];
@@ -69,7 +69,7 @@ const RequestsPage = ({ onLogout }) => {
 
   const handleAccept = async (requestId, sender) => {
     try {
-      await axios.post(`http://localhost:4000/api/v1/user/request/${requestId}/accept`, {}, {
+      await axios.post(`https://cybersecurityproject-soi5.onrender.com/api/v1/user/request/${requestId}/accept`, {}, {
         withCredentials: true,
       });
       setRequests(requests.filter((req) => req._id !== requestId));
@@ -86,7 +86,7 @@ const RequestsPage = ({ onLogout }) => {
 
   const handleDecline = async (requestId, sender) => {
     try {
-      await axios.post(`http://localhost:4000/api/v1/user/request/${requestId}/decline`, {}, {
+      await axios.post(`https://cybersecurityproject-soi5.onrender.com/api/v1/user/request/${requestId}/decline`, {}, {
         withCredentials: true,
       });
       setRequests(requests.filter((req) => req._id !== requestId));
