@@ -13,7 +13,6 @@ import {
 } from "mdb-react-ui-kit";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/Login.css";
-import cyberProjectLogo from "../cyber_project_logo.png"
 
 
 const Login = () => {
@@ -56,7 +55,7 @@ const Login = () => {
 
               <div className="text-center mb-5">
                 <img
-                  src={cyberProjectLogo}
+                  src="https://i.imgur.com/pMW2Ee2.png"
                   className="logo"
                   alt="CyberSec Logo"
                   height="100px"

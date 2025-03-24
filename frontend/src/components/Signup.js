@@ -82,7 +82,7 @@ const Signup = () => {
 
               <div className="text-center mb-5">
                 <img
-                  src="https://ahduni.edu.in/site/assets/files/1/default_logo_final_png.1400x0.webp"
+                  src="https://i.imgur.com/pMW2Ee2.png"
                   className="logo"
                   alt="CyberSec Logo"
                 />
