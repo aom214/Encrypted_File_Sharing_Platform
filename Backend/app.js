@@ -32,7 +32,7 @@ app.use("/api/v1", routes);
 =======
 // CORS Configuration
 const corsOptions = {
-    origin: ["https://cybersecurityfrontend.onrender.com", "http://localhost:3000", "*"], // Frontend URLs
+    origin: ["https://cybersecurityproject-soi5.onrender.com/api/v1/user/Login","https://cybersecurityfrontend.onrender.com", "http://localhost:3000", "*"], // Frontend URLs
     credentials: true, // Allow cookies & authentication headers
     methods: "GET,POST,PUT,DELETE,OPTIONS", // Ensure OPTIONS is handled
     allowedHeaders: "Content-Type,Authorization"
