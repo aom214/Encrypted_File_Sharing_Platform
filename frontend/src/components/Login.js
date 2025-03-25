@@ -14,27 +14,30 @@ import {
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/Login.css";
 
-
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(null); // State to track login error
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false); // New loading state
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError(null); // Clear previous error
+    setIsLoading(true); // Start loading
     try {
-      const result = await dispatch(loginUser({ username, password })).unwrap(); // Assuming loginUser returns a promise
+      const result = await dispatch(loginUser({ username, password })).unwrap();
       navigate("/"); // Redirect on success
     } catch (err) {
-      setError("Login failed. Check your credentials."); // Updated error message
+      setError("Login failed. Check your credentials.");
+    } finally {
+      setIsLoading(false); // Stop loading regardless of success or failure
     }
   };
 
   const dismissError = () => {
-    setError(null); // Clear error when dismissed
+    setError(null);
   };
 
   return (
@@ -48,7 +51,7 @@ const Login = () => {
                 <div className="error-notification mb-4">
                   <span>{error}</span>
                   <button className="close-btn" onClick={dismissError}>
-                    &times;
+                    ×
                   </button>
                 </div>
               )}
@@ -78,6 +81,7 @@ const Login = () => {
                     required
                     className="custom-input"
                     placeholder="Your username"
+                    disabled={isLoading} // Disable input during loading
                   />
                 </div>
 
@@ -88,24 +92,39 @@ const Login = () => {
                   </label>
                   <MDBInput
                     id="password-input"
-Password                    value={password}
+                    type="password" // Fixed missing type attribute
+                    value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     className="custom-input"
                     placeholder="Your password"
+                    disabled={isLoading} // Disable input during loading
                   />
                 </div>
 
                 <div className="text-center mb-4">
-                  <MDBBtn className="w-100 login-btn" type="submit">
-                    <i className="fas fa-lock me-2"></i>Unlock Portal
+                  <MDBBtn
+                    className="w-100 login-btn"
+                    type="submit"
+                    disabled={isLoading} // Disable button during loading
+                  >
+                    {isLoading ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Logging in...
+                      </>
+                    ) : (
+                      <>
+                        <i className="fas fa-lock me-2"></i>Unlock Portal
+                      </>
+                    )}
                   </MDBBtn>
                 </div>
               </form>
 
               <div className="text-center mt-4">
                 <p className="signup-text">Need access?</p>
-                <MDBBtn outline className="sign-up-btn" onClick={() => navigate("/signup")}>
+                <MDBBtn outline className="sign-up-btn" onClick={() => navigate("/signup")} disabled={isLoading}>
                   Register
                 </MDBBtn>
               </div>

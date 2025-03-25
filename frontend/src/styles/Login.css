@@ -20,7 +20,18 @@
   margin: 20px 0 !important;
   width: 100% !important;
 }
+/* Customize the spinner */
+.spinner-border {
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+  border-width: 0.2em !important;
+  color: #00d4ff !important; /* Match your theme */
+}
 
+/* Ensure the button text aligns nicely with the spinner */
+.login-btn .spinner-border {
+  vertical-align: middle !important;
+}
 .login-card:hover {
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5) !important;
 }
