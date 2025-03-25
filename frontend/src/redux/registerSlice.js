@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const API_URL = "https://cybersecuritybackend.onrender.com/api/v1/user/Register"; // ✅ API Endpoint
+const API_URL = "https://cybersecurityproject-soi5.onrender.com/api/v1/user/Register"; // ✅ API Endpoint
 
 // 🔹 Async thunk for user registration
 export const registerUser = createAsyncThunk(
