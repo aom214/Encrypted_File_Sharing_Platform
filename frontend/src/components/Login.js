@@ -71,7 +71,7 @@ const Login = ({ onLoadComplete }) => {
                   alt="CyberSec Logo"
                   height="100px"
                 />
-                <h4 className="mt-4 welcome-text">Cyber Security Login</h4>
+                <h4 className="mt-4 welcome-text">TrustShare Login</h4>
                 <p className="sub-text">Enter your credentials to unlock</p>
               </div>
               <form onSubmit={handleLogin}>
