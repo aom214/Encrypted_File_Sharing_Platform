@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUser, logoutUser } from "./redux/authSlice"; // Import from your authSlice
+import axios from "axios";
+import { setUser, logoutUser } from "./redux/authSlice";
 import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
 import Files from "./components/Files";
 import PrivateRoute from "./components/PrivateRoute";
 import Signup from "./components/Signup";
 import RequestsPage from "./components/Notifications";
-import AddFriendsPage from "./components/Addfrined";
+import AddFriendsPage from "./components/Addfrined"; // Assuming typo; should be AddFriends.js?
 import Home from "./components/Home";
 import UserProfile from "./components/userprofile";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -28,18 +29,32 @@ const Loader = () => (
 
 const App = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { user, loading } = useSelector((state) => state.auth); // Use loading from authSlice
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [routeLoading, setRouteLoading] = useState(false);
+  const { user } = useSelector((state) => state.auth);
+  const [initialLoading, setInitialLoading] = useState(true); // Initial app loading
+  const [routeLoading, setRouteLoading] = useState(false); // Route transition loading
 
   useEffect(() => {
     let isMounted = true;
 
     const checkUser = async () => {
-      await dispatch(fetchUser()); // Use fetchUser thunk
-      if (isMounted) {
-        setInitialLoading(false);
+      try {
+        const response = await axios.post(
+          "https://cybersecurityproject-soi5.onrender.com/api/v1/user/GetUser",
+          {},
+          { withCredentials: true }
+        );
+        if (isMounted) {
+          dispatch(setUser(response.data.user));
+        }
+      } catch (error) {
+        console.error("User fetch failed:", error.response?.data || error.message);
+        if (isMounted) {
+          dispatch(logoutUser());
+        }
+      } finally {
+        if (isMounted) {
+          setInitialLoading(false);
+        }
       }
     };
 
@@ -50,19 +65,20 @@ const App = () => {
     };
   }, [dispatch]);
 
-  const handleLogout = async () => {
-    await dispatch(logoutUser()); // Use logoutUser thunk
-    navigate("/login"); // Redirect after logout
-  };
+  // Show loader during initial load
+  if (initialLoading) return <Loader />;
 
-  // Show loader during initial load or auth loading
-  if (initialLoading || loading) return <Loader />;
+  const redirectToLogin = () => <Navigate to="/login" />;
+
+  const handleLogout = () => {
+    dispatch(logoutUser());
+  };
 
   return (
     <Router>
       <AppRoutes
         user={user}
-        redirectToLogin={() => <Navigate to="/login" />}
+        redirectToLogin={redirectToLogin}
         handleLogout={handleLogout}
         setRouteLoading={setRouteLoading}
       />
@@ -79,6 +95,7 @@ const AppRoutes = ({ user, redirectToLogin, handleLogout, setRouteLoading }) => 
     setRouteLoading(true);
     console.log(`Route changed to: ${location.pathname}, loading: true`);
 
+    // Fallback timeout to prevent infinite loading
     const timeout = setTimeout(() => {
       setRouteLoading(false);
       console.log("Route change timeout, loading: false");
@@ -108,11 +125,23 @@ const AppRoutes = ({ user, redirectToLogin, handleLogout, setRouteLoading }) => 
       />
       <Route
         path="/login"
-        element={user ? <Navigate to="/" /> : <Login onLoadComplete={stopLoading} />}
+        element={
+          user ? (
+            <Navigate to="/" />
+          ) : (
+            <Login onLoadComplete={stopLoading} />
+          )
+        }
       />
       <Route
         path="/signup"
-        element={user ? <Navigate to="/" /> : <Signup onLoadComplete={stopLoading} />}
+        element={
+          user ? (
+            <Navigate to="/" />
+          ) : (
+            <Signup onLoadComplete={stopLoading} />
+          )
+        }
       />
       <Route
         path="/profile"
