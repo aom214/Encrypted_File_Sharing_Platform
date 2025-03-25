@@ -9,7 +9,7 @@ const Dashboard = ({ onLogout }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [friends, setFriends] = useState([]);
   const [filteredFriends, setFilteredFriends] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState("ALL");
   const [showModal, setShowModal] = useState(false);
