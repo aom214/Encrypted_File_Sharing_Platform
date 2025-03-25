@@ -43,7 +43,7 @@ const Files = ({ onLogout }) => {
         throw new Error("Decrypted file URL not found in response");
       }
 
-      const fileResponse = await axios.get(decryptedFileUrl.url, {
+      const fileResponse = await axios.get(decryptedFileUrl.secure_url, {
         responseType: "blob",
       });
       console.log("Decrypted file downloaded, Blob size:", fileResponse.data.size);
