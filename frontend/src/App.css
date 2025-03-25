@@ -13,6 +13,29 @@
   }
 }
 
+/* App.css */
+
+/* Loader Styles */
+.loader-container {
+  background: rgba(27, 38, 59, 0.95); /* Matches your login card background */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999; /* Ensure it overlays everything */
+}
+
+.spinner-border {
+  border-color: #00d4ff !important; /* Matches your theme */
+  border-right-color: transparent !important;
+}
+
+.text-light {
+  font-family: 'Roboto Mono', monospace !important;
+  color: #e0e1dd !important;
+}
+
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
