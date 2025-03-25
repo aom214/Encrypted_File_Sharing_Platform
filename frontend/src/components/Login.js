@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../redux/authSlice.js";
@@ -14,25 +14,35 @@ import {
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/Login.css";
 
-const Login = () => {
+const Login = ({ onLoadComplete }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false); // New loading state
+  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    // Call onLoadComplete when the component is fully loaded
+    if (onLoadComplete) {
+      setTimeout(() => {
+        onLoadComplete(); // Stop loader after a delay (replace with real logic)
+      }, 1000); // Simulate loading time; adjust or replace with actual data fetch
+    }
+  }, [onLoadComplete]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(null); // Clear previous error
-    setIsLoading(true); // Start loading
+    setError(null);
+    setIsLoading(true);
     try {
       const result = await dispatch(loginUser({ username, password })).unwrap();
-      navigate("/"); // Redirect on success
+      navigate("/");
     } catch (err) {
       setError("Login failed. Check your credentials.");
     } finally {
-      setIsLoading(false); // Stop loading regardless of success or failure
+      setIsLoading(false);
+      if (onLoadComplete) onLoadComplete(); // Stop loader after login attempt
     }
   };
 
@@ -46,7 +56,6 @@ const Login = () => {
         <MDBCol md="6" lg="4">
           <MDBCard className="login-card">
             <MDBCardBody className="p-5">
-              {/* Error Notification */}
               {error && (
                 <div className="error-notification mb-4">
                   <span>{error}</span>
@@ -55,7 +64,6 @@ const Login = () => {
                   </button>
                 </div>
               )}
-
               <div className="text-center mb-5">
                 <img
                   src="https://i.imgur.com/pMW2Ee2.png"
@@ -66,9 +74,7 @@ const Login = () => {
                 <h4 className="mt-4 welcome-text">Cyber Security Login</h4>
                 <p className="sub-text">Enter your credentials to unlock</p>
               </div>
-
               <form onSubmit={handleLogin}>
-                {/* Username */}
                 <div className="input-group mb-4">
                   <label className="form-label stylish-label" htmlFor="username-input">
                     Username
@@ -81,33 +87,26 @@ const Login = () => {
                     required
                     className="custom-input"
                     placeholder="Your username"
-                    disabled={isLoading} // Disable input during loading
+                    disabled={isLoading}
                   />
                 </div>
-
-                {/* Password */}
                 <div className="input-group mb-5">
                   <label className="form-label stylish-label" htmlFor="password-input">
                     Password
                   </label>
                   <MDBInput
                     id="password-input"
-                    type="password" // Fixed missing type attribute
+                    type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     className="custom-input"
                     placeholder="Your password"
-                    disabled={isLoading} // Disable input during loading
+                    disabled={isLoading}
                   />
                 </div>
-
                 <div className="text-center mb-4">
-                  <MDBBtn
-                    className="w-100 login-btn"
-                    type="submit"
-                    disabled={isLoading} // Disable button during loading
-                  >
+                  <MDBBtn className="w-100 login-btn" type="submit" disabled={isLoading}>
                     {isLoading ? (
                       <>
                         <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
@@ -121,7 +120,6 @@ const Login = () => {
                   </MDBBtn>
                 </div>
               </form>
-
               <div className="text-center mt-4">
                 <p className="signup-text">Need access?</p>
                 <MDBBtn outline className="sign-up-btn" onClick={() => navigate("/signup")} disabled={isLoading}>

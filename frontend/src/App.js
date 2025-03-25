@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { setUser, logoutUser } from "./redux/authSlice";
@@ -12,7 +12,8 @@ import RequestsPage from "./components/Notifications";
 import AddFriendsPage from "./components/Addfrined"; // Assuming typo; should be AddFriends.js?
 import Home from "./components/Home";
 import UserProfile from "./components/userprofile";
-import "bootstrap/dist/css/bootstrap.min.css"; // Assuming you're using Bootstrap globally
+import "bootstrap/dist/css/bootstrap.min.css";
+import "./App.css";
 
 // Loader Component
 const Loader = () => (
@@ -29,7 +30,8 @@ const Loader = () => (
 const App = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const [loading, setLoading] = useState(true); // Initial loading state
+  const [initialLoading, setInitialLoading] = useState(true); // Initial app loading
+  const [routeLoading, setRouteLoading] = useState(false); // Route transition loading
 
   useEffect(() => {
     let isMounted = true;
@@ -51,7 +53,7 @@ const App = () => {
         }
       } finally {
         if (isMounted) {
-          setLoading(false);
+          setInitialLoading(false);
         }
       }
     };
@@ -63,8 +65,8 @@ const App = () => {
     };
   }, [dispatch]);
 
-  // Show loader during initial user check
-  if (loading) return <Loader />;
+  // Show loader during initial load
+  if (initialLoading) return <Loader />;
 
   const redirectToLogin = () => <Navigate to="/login" />;
 
@@ -74,30 +76,38 @@ const App = () => {
 
   return (
     <Router>
-      <AppWithLoader
+      <AppRoutes
         user={user}
         redirectToLogin={redirectToLogin}
         handleLogout={handleLogout}
+        setRouteLoading={setRouteLoading}
       />
+      {routeLoading && <Loader />}
     </Router>
   );
 };
 
-// Separate component to handle route transitions with loader
-const AppWithLoader = ({ user, redirectToLogin, handleLogout }) => {
-  const [routeLoading, setRouteLoading] = useState(false);
-  const navigation = useNavigation(); // Hook to detect navigation state (React Router v6.4+)
+// Separate component to handle routes and loading
+const AppRoutes = ({ user, redirectToLogin, handleLogout, setRouteLoading }) => {
+  const location = useLocation();
 
-  // Detect navigation state changes
   useEffect(() => {
-    if (navigation.state === "loading") {
-      setRouteLoading(true);
-    } else {
-      setRouteLoading(false);
-    }
-  }, [navigation.state]);
+    setRouteLoading(true);
+    console.log(`Route changed to: ${location.pathname}, loading: true`);
 
-  if (routeLoading) return <Loader />;
+    // Fallback timeout to prevent infinite loading
+    const timeout = setTimeout(() => {
+      setRouteLoading(false);
+      console.log("Route change timeout, loading: false");
+    }, 5000);
+
+    return () => clearTimeout(timeout);
+  }, [location.pathname, setRouteLoading]);
+
+  const stopLoading = () => {
+    setRouteLoading(false);
+    console.log("Component loaded, loading: false");
+  };
 
   return (
     <Routes>
@@ -106,7 +116,7 @@ const AppWithLoader = ({ user, redirectToLogin, handleLogout }) => {
         element={
           user ? (
             <PrivateRoute>
-              <Home onLogout={handleLogout} />
+              <Home onLogout={handleLogout} onLoadComplete={stopLoading} />
             </PrivateRoute>
           ) : (
             redirectToLogin()
@@ -115,18 +125,30 @@ const AppWithLoader = ({ user, redirectToLogin, handleLogout }) => {
       />
       <Route
         path="/login"
-        element={user ? <Navigate to="/" /> : <Login />}
+        element={
+          user ? (
+            <Navigate to="/" />
+          ) : (
+            <Login onLoadComplete={stopLoading} />
+          )
+        }
       />
       <Route
         path="/signup"
-        element={user ? <Navigate to="/" /> : <Signup />}
+        element={
+          user ? (
+            <Navigate to="/" />
+          ) : (
+            <Signup onLoadComplete={stopLoading} />
+          )
+        }
       />
       <Route
         path="/profile"
         element={
           user ? (
             <PrivateRoute>
-              <UserProfile onLogout={handleLogout} />
+              <UserProfile onLogout={handleLogout} onLoadComplete={stopLoading} />
             </PrivateRoute>
           ) : (
             redirectToLogin()
@@ -138,7 +160,7 @@ const AppWithLoader = ({ user, redirectToLogin, handleLogout }) => {
         element={
           user ? (
             <PrivateRoute>
-              <Dashboard onLogout={handleLogout} />
+              <Dashboard onLogout={handleLogout} onLoadComplete={stopLoading} />
             </PrivateRoute>
           ) : (
             redirectToLogin()
@@ -150,7 +172,7 @@ const AppWithLoader = ({ user, redirectToLogin, handleLogout }) => {
         element={
           user ? (
             <PrivateRoute>
-              <Files onLogout={handleLogout} />
+              <Files onLogout={handleLogout} onLoadComplete={stopLoading} />
             </PrivateRoute>
           ) : (
             redirectToLogin()
@@ -162,7 +184,7 @@ const AppWithLoader = ({ user, redirectToLogin, handleLogout }) => {
         element={
           user ? (
             <PrivateRoute>
-              <RequestsPage onLogout={handleLogout} />
+              <RequestsPage onLogout={handleLogout} onLoadComplete={stopLoading} />
             </PrivateRoute>
           ) : (
             redirectToLogin()
@@ -174,7 +196,7 @@ const AppWithLoader = ({ user, redirectToLogin, handleLogout }) => {
         element={
           user ? (
             <PrivateRoute>
-              <AddFriendsPage onLogout={handleLogout} />
+              <AddFriendsPage onLogout={handleLogout} onLoadComplete={stopLoading} />
             </PrivateRoute>
           ) : (
             redirectToLogin()
