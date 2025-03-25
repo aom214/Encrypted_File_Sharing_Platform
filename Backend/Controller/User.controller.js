@@ -151,30 +151,32 @@ const Login = async (req, res) => {
 
 
 
-const Logout = async(req,res)=>{
-    const req_user= req.user;
-    console.log("nothing")
-    console.log(req_user)
-    if(!req_user){
-        return res.status(400).json({"error":"login first for logout"})
+const Logout = async (req, res) => {
+    console.log("Logging out...");
+    console.log("Cookies:", req.cookies);
+
+    if (!req.user) {
+        return res.status(400).json({ "error": "Login first to log out" });
     }
-    console.log("ehllo")
 
     res.clearCookie("accessToken", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "Strict",
+        sameSite: "None",
+        path: "/",
     });
 
     res.clearCookie("refreshToken", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "Strict",
+        sameSite: "None",
+        path: "/",
     });
-    console.log("logout is successfull")
 
-    res.status(200).json({ "message": "Logged out successfully" });
-}
+    console.log("Logout successful");
+    return res.status(200).json({ message: "Logged out successfully" });
+};
+
 
 const test = async (req,res)=>{
     const file_path=req.file["path"];
