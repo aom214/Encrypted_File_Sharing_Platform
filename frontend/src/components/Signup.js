@@ -61,10 +61,6 @@ const Signup = () => {
 
   const dismissError = () => setLocalError(null);
 
-  const input_group={
-    "width":"140px"
-  }
-
   return (
     <MDBContainer fluid className="login-container signup-page">
       <MDBRow className="d-flex justify-content-center w-100">
@@ -81,19 +77,15 @@ const Signup = () => {
               )}
 
               <div className="text-center mb-5">
-                <img
-                  src="https://i.imgur.com/pMW2Ee2.png"
-                  className="logo"
-                  alt="CyberSec Logo"
-                />
-                <h4 className="mt-4 welcome-text">Cyber Security Signup</h4>
+
+                <h4 className="mt-4 welcome-text">Trust Share Signup</h4>
                 <p className="sub-text">Register to secure your access</p>
               </div>
 
               <form onSubmit={handleSignup}>
                 <div className="input-group mb-4">
                   <label className="form-label stylish-label" htmlFor="firstName-input">
-                    First Name
+                    <span className="required-asterisk">*</span>First Name
                   </label>
                   <MDBInput
                     id="firstName-input"
@@ -103,14 +95,13 @@ const Signup = () => {
                     onChange={handleChange}
                     required
                     className="custom-input"
-                    style={{'width':'314px'}}
                     placeholder="Your first name"
                   />
                 </div>
 
                 <div className="input-group mb-4">
                   <label className="form-label stylish-label" htmlFor="lastName-input">
-                    Last Name
+                    <span className="required-asterisk">*</span>Last Name
                   </label>
                   <MDBInput
                     id="lastName-input"
@@ -120,14 +111,13 @@ const Signup = () => {
                     onChange={handleChange}
                     required
                     className="custom-input"
-                    style={{'width':'314px'}}
                     placeholder="Your last name"
                   />
                 </div>
 
                 <div className="input-group mb-4">
                   <label className="form-label stylish-label" htmlFor="email-input">
-                    Email
+                    <span className="required-asterisk">*</span>Email
                   </label>
                   <MDBInput
                     id="email-input"
@@ -137,14 +127,13 @@ const Signup = () => {
                     onChange={handleChange}
                     required
                     className="custom-input"
-                    style={{'width':'314px'}}
                     placeholder="Your email"
                   />
                 </div>
 
                 <div className="input-group mb-4">
-                  <label className="form-label stylish-label"  htmlFor="username-input">
-                    Username
+                  <label className="form-label stylish-label" htmlFor="username-input">
+                    <span className="required-asterisk">*</span>Username
                   </label>
                   <MDBInput
                     id="username-input"
@@ -153,7 +142,6 @@ const Signup = () => {
                     value={formData.username}
                     onChange={handleChange}
                     required
-                    style={{'width':'314px'}}
                     className="custom-input"
                     placeholder="Your username"
                   />
@@ -161,7 +149,7 @@ const Signup = () => {
 
                 <div className="input-group mb-5">
                   <label className="form-label stylish-label" htmlFor="password-input">
-                    Password
+                    <span className="required-asterisk">*</span>Password
                   </label>
                   <MDBInput
                     id="password-input"
@@ -172,7 +160,6 @@ const Signup = () => {
                     required
                     className="custom-input"
                     placeholder="Your password"
-                    style={{'width':'314px'}}
                   />
                 </div>
 
@@ -186,13 +173,19 @@ const Signup = () => {
                     className="custom-file-input"
                     accept="image/*"
                     onChange={handleFileChange}
-                    style={{'width':'314px'}}
                   />
                 </div>
 
                 <div className="text-center mb-4">
                   <MDBBtn className="w-100 login-btn" type="submit" disabled={loading}>
-                    {loading ? "Securing Access..." : "Register"}
+                    {loading ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Securing Access...
+                      </>
+                    ) : (
+                      "Register"
+                    )}
                   </MDBBtn>
                 </div>
               </form>

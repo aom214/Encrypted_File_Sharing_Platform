@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CustomNavbar from './Navbar.js';
+import ChatWidget from './ChatWidget.js';
 import './Home.css';
+import '../styles/ChatWidget.css';
 
 const Home = ({ onLogout }) => {
   const navigate = useNavigate();
@@ -79,10 +81,14 @@ const Home = ({ onLogout }) => {
           <div className="stat-item"><span>99.9%</span> Threat proof</div>
         </div>
       </section>
+
       {/* Footer */}
       <footer className="footer">
         <p>© 2025 Ahmedabad University. All rights reserved.</p>
       </footer>
+
+      {/* Chat Widget */}
+      <ChatWidget />
     </div>
   );
 };

@@ -21,7 +21,7 @@ const Dashboard = ({ onLogout }) => {
   useEffect(() => {
     const fetchFriends = async () => {
       try {
-        const response = await axios.get("https://cybersecurityproject-soi5.onrender.com/api/v1/user/friends/", {
+        const response = await axios.get("http://localhost:4000/api/v1/user/friends/", {
           withCredentials: true,
         });
         const friendsData = response.data.friends || response.data || [];
@@ -107,13 +107,13 @@ const Dashboard = ({ onLogout }) => {
     const formData = new FormData();
     formData.append("shared_file", file);
 
-    console.log("Uploading file to:", `https://cybersecurityproject-soi5.onrender.com/api/v1/user/friends/${selectedFriend._id}/files/share/`);
+    console.log("Uploading file to:", `http://localhost:4000/api/v1/user/friends/${selectedFriend._id}/files/share/`);
     console.log("FormData contents:", formData.get("shared_file"));
 
     try {
       setUploading(true);
       const response = await axios.post(
-        `https://cybersecurityproject-soi5.onrender.com/api/v1/user/friends/${selectedFriend._id}/files/share/`,
+        `http://localhost:4000/api/v1/user/friends/${selectedFriend._id}/files/share/`,
         formData,
         {
           withCredentials: true,
@@ -150,8 +150,8 @@ const Dashboard = ({ onLogout }) => {
         )}
         <div className="dashboard-card">
           <div className="header">
-            <h2 className="dashboard-title glitch" data-text="My User List">My User List</h2>
-            <p className="friends-count">Friends</p>
+            <h2 className="dashboard-title glitch" data-text="My User List">My Friend List</h2>
+            <p className="friends-count"></p>
           </div>
           <div className="filter-section">
             <div className="search-section">

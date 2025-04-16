@@ -47,7 +47,11 @@ const User_Schema=new mongoose.Schema({
     accessToken:{
         type:String,
         required:false
-    }
+    },
+    authenticated_otp: {
+        type: Boolean,
+        default: false
+      },
 })
 
 User_Schema.methods.GenerateAccessToken=async function(){

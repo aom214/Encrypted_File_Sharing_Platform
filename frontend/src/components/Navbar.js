@@ -51,7 +51,10 @@ function OffcanvasExample({ onLogout }) {
                   <Nav.Link href="/files" className="nav-item">View Received Files</Nav.Link>
                   <Nav.Link href="/request" className="nav-item">Notifications</Nav.Link>
                   <Nav.Link href="/add-friends" className="nav-item">Add Friend</Nav.Link>
+                  <Nav.Link href="/EncryptFile" className="nav-item">Encrypt File</Nav.Link>
+                  <Nav.Link href="/DecryptFile" className="nav-item">Decrypt File</Nav.Link>
                   <Nav.Link href="/profile" className="nav-item">Profile</Nav.Link>
+                  <Nav.Link href="/Admin" className="nav-item">Admin Page</Nav.Link>
                   <Nav.Link onClick={onLogout} className="nav-item">Logout</Nav.Link>
                 </Nav>
                 <Form className="d-flex search-form">

@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { loginUser } from "../redux/authSlice.js";
+import React, { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { loginUser, setUsername } from '../redux/authSlice';
+import { useNavigate } from 'react-router-dom';
 import {
   MDBBtn,
   MDBContainer,
@@ -10,70 +10,69 @@ import {
   MDBInput,
   MDBCard,
   MDBCardBody,
-} from "mdb-react-ui-kit";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "../styles/Login.css";
+} from 'mdb-react-ui-kit';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import '../styles/Login.css';
 
 const Login = ({ onLoadComplete }) => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [username, setUsernameState] = useState('');
+  const [password, setPassword] = useState('');
+  const [localError, setLocalError] = useState(null);
+  const [loading, setLoading] = useState(false); // New loading state
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Call onLoadComplete when the component is fully loaded
-    if (onLoadComplete) {
-      setTimeout(() => {
-        onLoadComplete(); // Stop loader after a delay (replace with real logic)
-      }, 1000); // Simulate loading time; adjust or replace with actual data fetch
-    }
-  }, [onLoadComplete]);
-
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(null);
-    setIsLoading(true);
+    setLocalError(null);
+    setLoading(true); // Start loading
     try {
       const result = await dispatch(loginUser({ username, password })).unwrap();
-      navigate("/");
-    } catch (err) {
-      setError("Login failed. Check your credentials.");
+      dispatch(setUsername(username));
+      if (
+        result.otpRequired ||
+        result.message?.toLowerCase().includes("otp") ||
+        result.message?.toLowerCase().includes("sent")
+      ) {
+        navigate('/verify-otp', { replace: true });
+      } else {
+        navigate('/');
+      }
+    } catch (error) {
+      setLocalError(error.message || 'Login failed. Please try again.');
     } finally {
-      setIsLoading(false);
-      if (onLoadComplete) onLoadComplete(); // Stop loader after login attempt
+      setLoading(false); // Stop loading
+      onLoadComplete();
     }
   };
 
-  const dismissError = () => {
-    setError(null);
-  };
+  const dismissError = () => setLocalError(null);
+
+  useEffect(() => {
+    onLoadComplete();
+  }, [onLoadComplete]);
 
   return (
-    <MDBContainer fluid className="login-container d-flex align-items-center justify-content-center vh-100">
+    <MDBContainer fluid className="login-container login-page">
       <MDBRow className="d-flex justify-content-center w-100">
-        <MDBCol md="6" lg="4">
+        <MDBCol md="8" lg="5">
           <MDBCard className="login-card">
             <MDBCardBody className="p-5">
-              {error && (
+              {localError && (
                 <div className="error-notification mb-4">
-                  <span>{error}</span>
+                  <span>{localError}</span>
                   <button className="close-btn" onClick={dismissError}>
                     ×
                   </button>
                 </div>
               )}
+
               <div className="text-center mb-5">
-                <img
-                  src="https://i.imgur.com/pMW2Ee2.png"
-                  className="logo"
-                  alt="CyberSec Logo"
-                  height="100px"
-                />
-                <h4 className="mt-4 welcome-text">TrustShare Login</h4>
-                <p className="sub-text">Enter your credentials to unlock</p>
+              
+                <h4 className="mt-4 welcome-text">Trust Share Login</h4>
+                <p className="sub-text">Access your secure account</p>
               </div>
+
               <form onSubmit={handleLogin}>
                 <div className="input-group mb-4">
                   <label className="form-label stylish-label" htmlFor="username-input">
@@ -83,13 +82,14 @@ const Login = ({ onLoadComplete }) => {
                     id="username-input"
                     type="text"
                     value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    onChange={(e) => setUsernameState(e.target.value)}
                     required
                     className="custom-input"
                     placeholder="Your username"
-                    disabled={isLoading}
+                    disabled={loading} // Disable input during loading
                   />
                 </div>
+
                 <div className="input-group mb-5">
                   <label className="form-label stylish-label" htmlFor="password-input">
                     Password
@@ -102,28 +102,28 @@ const Login = ({ onLoadComplete }) => {
                     required
                     className="custom-input"
                     placeholder="Your password"
-                    disabled={isLoading}
+                    disabled={loading} // Disable input during loading
                   />
                 </div>
+
                 <div className="text-center mb-4">
-                  <MDBBtn className="w-100 login-btn" type="submit" disabled={isLoading}>
-                    {isLoading ? (
+                  <MDBBtn className="w-100 login-btn" type="submit" disabled={loading}>
+                    {loading ? (
                       <>
                         <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                        Logging in...
+                        Securing Access...
                       </>
                     ) : (
-                      <>
-                        <i className="fas fa-lock me-2"></i>Unlock Portal
-                      </>
+                      'Login'
                     )}
                   </MDBBtn>
                 </div>
               </form>
+
               <div className="text-center mt-4">
-                <p className="signup-text">Need access?</p>
-                <MDBBtn outline className="sign-up-btn" onClick={() => navigate("/signup")} disabled={isLoading}>
-                  Register
+                <p className="signup-text">Not registered yet?</p>
+                <MDBBtn outline className="sign-up-btn" onClick={() => navigate("/signup")} disabled={loading}>
+                  Sign Up
                 </MDBBtn>
               </div>
             </MDBCardBody>

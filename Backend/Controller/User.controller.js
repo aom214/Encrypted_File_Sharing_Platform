@@ -5,7 +5,36 @@ import encryptFile from "../utils/fileencryption.js"
 import decryptFile from "../utils/filedecryption.js"
 import fs from "fs"
 import { Friend } from "../Models/Friend.models.js"
+import nodemailer from "nodemailer"
+import crypto from "crypto"
+import {Otp} from "../Models/otp.models.js"
+import {sendOTP} from "../utils/mailer.js"
+const sendOtpEmail = async (email, otp) => {
+    const transporter = nodemailer.createTransport({
+        service: 'gmail', // Use your email provider's service
+        auth: {
+            user: "aom.k@ahduni.edu.in", // Your email address
+            pass: process.env.EMAIL_PASSWORD // Your email password or app password
+        }
+    }
+   );
+   console.log(process.env.EMAIL_USER,process.env.EMAIL_PASSWORD)
 
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: 'Your OTP Code for 2FA Login',
+        text: `Your OTP code is: ${otp}`
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log(`OTP sent to ${email}`);
+    } catch (error) {
+        console.error("Error sending OTP email:", error);  // Log the error details
+        throw new Error(`Error sending OTP email: ${error.message}`);  // Include the error message for clarity
+    }
+};
 
 const generate_jwt_token = async(id)=>{
     try {
@@ -87,6 +116,7 @@ const get_user_jwt=async(req,res)=>{
     }
     return res.status(200).json({"user":user})
 }
+
 const Login = async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -104,7 +134,20 @@ const Login = async (req, res) => {
         if (!is_match) {
             return res.status(400).json({ error: "Password is incorrect" });
         }
-
+        const otp_created = crypto.randomInt(100000, 999999).toString();
+        let if_otp_exist= await Otp.findOne({email:get_user.email})
+        if(if_otp_exist){
+            if_otp_exist.otp=otp_created 
+        }
+        else{
+            if_otp_exist= new Otp({
+                email:get_user.email,
+                otp:otp_created
+            })
+        }
+        await if_otp_exist.save()
+        await sendOTP(get_user.email, otp_created);
+        return res.status(200).json({"message":"otp sent successfully"})
         const { access_token, refresh_token } = await generate_jwt_token(get_user._id);
 
         if (!access_token || !refresh_token) {
@@ -149,34 +192,206 @@ const Login = async (req, res) => {
     }
 };
 
+const otp_verify = async (req, res) => {
+    const { username } = req.params;
+    const { otp } = req.body;
+  
+    if (!username) {
+      return res.status(400).json({ error: "provide username" });
+    }
+  
+    const user = await User.findOne({ username });
+    const get_user = user;
+    if (!user) {
+      return res.status(400).json({ error: "user is not defined" });
+    }
+  
+    if (!otp) {
+      return res.status(400).json({ message: "provide otp" });
+    }
+  
+    const otp_verify_mail = await Otp.findOne({ email: user.email });
+
+  
+    if (otp_verify_mail.otp != otp) {
+      return res.status(400).json({ message: "otp does not match" });
+    }
+  
+    const { access_token, refresh_token } = await generate_jwt_token(get_user._id);
+  
+    if (!access_token || !refresh_token) {
+      return res.status(400).json({ error: "Error in generating tokens" });
+    }
+  
+    user.accessToken = access_token;
+    user.refreshToken = refresh_token;
+    user.validateBeforeSave = false;
+    await get_user.save();
+  
+    const main_user = await User.findById(user._id).select("-password -refreshToken -__v");
+    if (!main_user) {
+      return res.status(400).json({ error: "Cannot get user after saving tokens" });
+    }
+  
+    // Set CORS Headers for development and production
+    const allowedOrigins = [
+      "http://localhost:3000",
+      "https://cybersecurityfrontend.onrender.com",
+    ];
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+    }
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  
+    // Set Secure Cookies
+    res.cookie("accessToken", access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // Allow HTTP in dev
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    });
+  
+    res.cookie("refreshToken", refresh_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+  
+    // Return sanitized user
+    return res.status(200).json({ user: main_user });
+  };
+
+
+// const Login = async (req, res) => {
+//     try {
+//         const { username, password } = req.body;
+
+//         if (!username || !password) {
+//             return res.status(400).json({ error: "Username or password cannot be null" });
+//         }
+
+//         const get_user = await User.findOne({ username });
+//         if (!get_user) {
+//             return res.status(400).json({ error: "There is no user with this username" });
+//         }
+
+//         // Validate the password
+//         const is_match = await get_user.is_password_correct(password);
+//         if (!is_match) {
+//             return res.status(400).json({ error: "Password is incorrect" });
+//         }
+
+//         // Generate a random OTP (One Time Password)
+//         const otp = crypto.randomInt(100000, 999999).toString(); // 6-digit OTP
+
+//         // Save OTP to the user's session (or temporary storage) for verification
+//         get_user.otp = otp;
+//         get_user.otpExpiry = Date.now() + 10 * 60 * 1000; // OTP expires in 10 minutes
+//         await get_user.save();
+
+//         // Send OTP to user's email
+//         await sendOtpEmail(get_user.email, otp);
+
+//         // Respond with a message asking the user to enter the OTP
+//         return res.status(200).json({ message: "OTP sent to your email. Please verify it." });
+
+//     } catch (error) {
+//         console.error("🔥 Login Error:", error);
+//         return res.status(500).json({ error: "Login failed" });
+//     }
+// };
+
+// // Controller function to verify OTP
+// const VerifyOtp = async (req, res) => {
+//     try {
+//         const { username, otp } = req.body;
+
+//         if (!username || !otp) {
+//             return res.status(400).json({ error: "Username and OTP are required" });
+//         }
+
+//         const get_user = await User.findOne({ username });
+//         if (!get_user) {
+//             return res.status(400).json({ error: "User not found" });
+//         }
+
+//         // Check if OTP is correct and not expired
+//         if (get_user.otp !== otp) {
+//             return res.status(400).json({ error: "Invalid OTP" });
+//         }
+
+//         if (get_user.otpExpiry < Date.now()) {
+//             return res.status(400).json({ error: "OTP has expired" });
+//         }
+
+//         // OTP is valid, generate JWT tokens
+//         const { access_token, refresh_token } = await generate_jwt_token(get_user._id);
+
+//         // Save tokens in user document
+//         get_user.accessToken = access_token;
+//         get_user.refreshToken = refresh_token;
+//         get_user.otp = undefined; // Clear OTP after use
+//         get_user.otpExpiry = undefined; // Clear OTP expiry after use
+//         await get_user.save();
+
+//         // Set CORS Headers and Secure Cookies (as you did before)
+//         res.setHeader("Access-Control-Allow-Origin", "https://yourfrontenddomain.com");
+//         res.setHeader("Access-Control-Allow-Credentials", "true");
+//         res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+//         res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+//         res.cookie("accessToken", access_token, {
+//             httpOnly: true,
+//             secure: true, // Ensure HTTPS
+//             sameSite: "None", // Allow cross-site requests
+//             maxAge: 15 * 60 * 1000, // 15 minutes
+//         });
+
+//         res.cookie("refreshToken", refresh_token, {
+//             httpOnly: true,
+//             secure: true,
+//             sameSite: "None",
+//             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+//         });
+
+//         // Respond with the authenticated user (excluding sensitive info)
+//         const main_user = await User.findById(get_user._id).select("-password -refreshToken -__v");
+//         return res.status(200).json({ user: main_user });
+
+//     } catch (error) {
+//         console.error("🔥 OTP Verification Error:", error);
+//         return res.status(500).json({ error: "OTP verification failed" });
+//     }
+// };
+
 
 
 const Logout = async (req, res) => {
     console.log("Logging out...");
     console.log("Cookies:", req.cookies);
-
+  
     if (!req.user) {
-        return res.status(400).json({ "error": "Login first to log out" });
+      return res.status(400).json({ error: "Login first to log out" });
     }
-
-    res.clearCookie("accessToken", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "None",
-        path: "/",
-    });
-
-    res.clearCookie("refreshToken", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "None",
-        path: "/",
-    });
-
+  
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+      path: "/",
+    };
+  
+    res.clearCookie("accessToken", cookieOptions);
+    res.clearCookie("refreshToken", cookieOptions);
+  
     console.log("Logout successful");
     return res.status(200).json({ message: "Logged out successfully" });
-};
-
+  };
+  
 
 const test = async (req,res)=>{
     const file_path=req.file["path"];
@@ -287,10 +502,17 @@ const request_friend = async (req, res) => {
 
 const get_all_requests_received = async(req,res)=>{
     const curr_user= req.user;
+    console.log(curr_user)
     if(!curr_user){
         return res.status(400).json({"error":"you need to login first"})
     }
-    const all_requests = await Notification.find({$and:[{receivers:curr_user},{file:false}]}).populate("receivers").populate("sender").sort({ createdAt: -1 });
+    const all_requests = await Notification.find({
+        receivers: curr_user._id,
+        file: false
+      })
+        .populate("receivers")
+        .populate("sender")
+        .sort({ createdAt: -1 });
     return res.status(200).json({"all_requests":all_requests})
 }
 const request_accepts = async (req, res) => {
@@ -401,4 +623,4 @@ const request_declines = async (req, res) => {
     }
 };
 
-export {Register,Login,get_user_jwt,Logout,generate_jwt_token,get_all_users_not_frineds,request_friend,get_all_requests_received,request_accepts,profile,request_declines,test}
+export {Register,Login,get_user_jwt,Logout,generate_jwt_token,get_all_users_not_frineds,request_friend,get_all_requests_received,request_accepts,profile,request_declines,test,otp_verify}
