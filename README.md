@@ -40,15 +40,3 @@ A secure file sharing platform built with the **MERN stack** that enables users 
 
 ---
 
-## 📦 Installation
-
-### 🧰 Clone the Repo
-
-```bash
-git clone https://github.com/your-username/encrypted-file-sharing.git
-cd encrypted-file-sharing---
-
-
-```bash
-git clone https://github.com/your-username/encrypted-file-sharing.git
-cd encrypted-file-sharing---
