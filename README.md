@@ -42,72 +42,13 @@ A secure file sharing platform built with the **MERN stack** that enables users 
 
 ## 📦 Installation
 
+### 🧰 Clone the Repo
+
 ```bash
-# Clone the repo
 git clone https://github.com/your-username/encrypted-file-sharing.git
-cd encrypted-file-sharing
+cd encrypted-file-sharing---
 
-# Install backend dependencies
-cd server
-npm install
 
-# Install frontend dependencies
-cd ../client
-npm install
-⚙️ Running the App
-Backend
-bash
-Copy
-Edit
-cd server
-npm start
-Frontend
-bash
-Copy
-Edit
-cd client
-npm start
-📁 Project Structure
-pgsql
-Copy
-Edit
-encrypted-file-sharing/
-├── client/           # React frontend
-├── server/           # Node.js + Express backend
-│   ├── routes/       # API routes
-│   ├── controllers/  # Logic for encryption and file handling
-│   ├── models/       # MongoDB models
-│   └── utils/        # AES and RSA helper functions
-└── README.md
-🔒 Security Notes
-RSA keys are generated per user and stored securely.
-
-AES keys are random per file and never stored in plain text.
-
-Decryption is done only on the client side, enhancing privacy.
-
-Files are transmitted securely via HTTPS (recommended in production).
-
-📃 License
-This project is licensed under the MIT License.
-
-✨ Contributions
-Feel free to open issues or pull requests to improve this system.
-
-📧 Contact
-For suggestions or questions, feel free to reach out:
-Aom Kapadia Kapadiaaom78@example.com
-
-yaml
-Copy
-Edit
-
----
-
-Let me know if you want:
-- Docker setup section
-- Live demo badge/link
-- Tech diagram (can generate)
-- Deployment (Heroku, Vercel, AWS) instructions
-
-Just drop your project repo name and author name if you'd like me to personalize it further.
+```bash
+git clone https://github.com/your-username/encrypted-file-sharing.git
+cd encrypted-file-sharing---
